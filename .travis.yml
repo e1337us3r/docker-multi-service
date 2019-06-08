@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t b1gbluewhal3/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true b1gbluewhal3/react-test npm test
+
+after_success:
+  - docker build -t b1gbluewhal3/multi-client ./client
+  - docker build -t b1gbluewhal3/multi-nginx ./nginx
+  - docker build -t b1gbluewhal3/multi-server ./server
+  - docker build -t b1gbluewhal3/multi-worker ./worker
+
+  - echo "$DOCKER_PW" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push b1gbluewhal3/multi-client
+  - docker push b1gbluewhal3/multi-nginx
+  - docker push b1gbluewhal3/multi-server
+  - docker push b1gbluewhal3/multi-worker
